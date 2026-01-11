@@ -266,7 +266,7 @@ function App() {
       const data = ffmpeg.FS('readFile', safeOutputName);
 
       // Create download link
-      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+      const url = URL.createObjectURL(new Blob([data.buffer as BlobPart], { type: 'video/mp4' }));
       const a = document.createElement('a');
       a.href = url;
       a.download = `split_${formatTime(startTime)}-${formatTime(range[1])}.mp4`;
