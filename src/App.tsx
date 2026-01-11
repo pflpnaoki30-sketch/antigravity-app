@@ -73,25 +73,16 @@ function App() {
   const [error, setError] = useState('');
   const [isSlow, setIsSlow] = useState(false);
 
-  // Debug State
-  const [showDebug, setShowDebug] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
-  const logsEndRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
 
-  /** デバッグログ追加 */
+  /** 内部ログ（開発者コンソール用） */
   const addLog = (msg: string) => {
-    const time = new Date().toLocaleTimeString();
-    setLogs(prev => [...prev, `[${time}] ${msg}`]);
+    if (import.meta.env.DEV) {
+      console.log(`[FFmpeg] ${msg}`);
+    }
   };
-
-  /** ログ自動スクロール */
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
 
   /** システムヘルスチェック */
   const runSystemCheck = async () => {
@@ -363,17 +354,13 @@ function App() {
             </div>
             <h1 className="text-base font-bold text-gray-800">動画・音声分割ツール</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => { setShowDebug(!showDebug); if (!showDebug) runSystemCheck(); }}
-              className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 text-gray-600"
-            >🛠️ Debug</button>
-            {!ready ? (
-              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">読込中...</span>
-            ) : (
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">準備完了</span>
-            )}
-          </div>
+          {/* ロード中のみ表示。完了後は非表示 */}
+          {!ready && (
+            <span className="text-xs text-gray-500 flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              読み込み中...
+            </span>
+          )}
         </div>
       </header>
 
@@ -513,25 +500,6 @@ function App() {
         )}
       </main>
 
-      {/* Debug Console */}
-      {showDebug && (
-        <div className="h-32 border-t border-gray-200 bg-gray-50 p-2 overflow-y-auto font-mono text-xs flex-none w-full">
-          {logs.map((log, i) => (
-            <div
-              key={i}
-              className={clsx(
-                "mb-0.5",
-                log.toLowerCase().includes('error') || log.toLowerCase().includes('fail') ? "text-red-500" :
-                  log.toLowerCase().includes('warn') ? "text-amber-600" :
-                    log.toLowerCase().includes('success') || log.includes('✅') ? "text-green-600" : "text-gray-600"
-              )}
-            >
-              {log}
-            </div>
-          ))}
-          <div ref={logsEndRef} />
-        </div>
-      )}
     </div>
   );
 }
